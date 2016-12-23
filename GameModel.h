@@ -25,7 +25,7 @@ public:
 
     void startGame(GameType gameType); // 开始游戏
     void updateGameMap(int row, int col); // 每次落子后更新游戏棋盘
-    bool isWin(int x, int y); // 判断游戏是否胜利
+    bool isWin(int row, int col); // 判断游戏是否胜利
     bool isDeadGame(); // 判断是否和棋
 };
 
