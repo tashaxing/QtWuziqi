@@ -1,4 +1,5 @@
 #include <QPainter>
+#include <QTimer>
 #include <QMouseEvent>
 #include <QMessageBox>
 #include <math.h>
@@ -10,6 +11,8 @@ const int kRadius = 15; // 棋子半径
 const int kMarkSize = 6; // 落子标记边长
 const int kBlockSize = 40; // 格子的大小
 const int kPosDelta = 20; // 鼠标点击的模糊距离上限
+
+const int kAIDelay = 1000; // AI下棋的思考时间
 
 // -------------------- //
 
@@ -41,7 +44,8 @@ void MainWindow::initGame()
 {   
     // 初始化游戏模型
     game = new GameModel;
-    game->startGame(PERSON);
+    game_type = BOT;
+    game->startGame(game_type);
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -107,7 +111,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
             QMessageBox::information(this, "congratulations", str + "win!");
 
             // 重置游戏状态，否则容易死循环
-            game->startGame(PERSON);
+            game->startGame(game_type);
         }
     }
 
@@ -116,7 +120,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
     if (game->isDeadGame())
     {
         QMessageBox::information(this, "oops", "dead game!");
-        game->startGame(PERSON);
+        game->startGame(game_type);
     }
 }
 
@@ -177,16 +181,35 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
-    // 根据当前存储的坐标下子
+    // 人下棋，并且不能抢机器的棋
+    if (!(game_type == BOT && !game->playerFlag))
+    {
+        chessOneByPerson();
+        // 如果是人机模式，需要调用AI下棋
+        if (game->gameType == BOT && !game->playerFlag)
+        {
+            // 用定时器做一个延迟
+            QTimer::singleShot(kAIDelay, this, SLOT(chessOneByAI()));
+        }
+    }
 
+}
+
+void MainWindow::chessOneByPerson()
+{
+    // 根据当前存储的坐标下子
     // 只有有效点击才下子，并且该处没有子
     if (clickPosRow != -1 && clickPosCol != -1 && game->gameMapVec[clickPosRow][clickPosCol] == 0)
     {
-        game->updateGameMap(clickPosRow, clickPosCol);
+        game->actionByPerson(clickPosRow, clickPosCol);
 
         // 重绘
         update();
     }
 }
 
+void MainWindow::chessOneByAI()
+{
+    game->actionByAI();
+}
 

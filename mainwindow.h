@@ -22,10 +22,14 @@ protected:
 
 private:
     GameModel *game; // 游戏指针
+    GameType game_type; // 存储游戏类型
     int clickPosRow, clickPosCol; // 存储将点击的位置
-
     void initGame();
     void checkGame(int y, int x);
+
+private slots:
+    void chessOneByPerson(); // 下棋执行
+    void chessOneByAI();
 };
 
 #endif // MAINWINDOW_H

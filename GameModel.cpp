@@ -5,8 +5,9 @@ GameModel::GameModel()
 
 }
 
-void GameModel::startGame(GameType gameType)
+void GameModel::startGame(GameType type)
 {
+    gameType = type;
     // 初始棋盘
     gameMapVec.clear();
     for (int i = 0; i < kBoardSizeNum; i++)
@@ -32,6 +33,34 @@ void GameModel::updateGameMap(int row, int col)
         gameMapVec[row][col] = -1;
     // 换手
     playerFlag = !playerFlag;
+}
+
+void GameModel::actionByPerson(int row, int col)
+{
+    updateGameMap(row, col);
+}
+
+void GameModel::actionByAI()
+{
+    // 计算评分
+    calculateScore();
+
+    // 从评分中找出最大分数的位置
+
+    // 落子
+    int row = rand() % kBoardSizeNum;
+    int col = rand() % kBoardSizeNum;
+    if (row > 0 && row < kBoardSizeNum && col > 0 && col < kBoardSizeNum)
+    {
+        updateGameMap(row, col);
+    }
+    else
+        actionByAI();
+}
+
+void GameModel::calculateScore()
+{
+
 }
 
 bool GameModel::isWin(int row, int col)
