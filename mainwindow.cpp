@@ -60,8 +60,10 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
     QBrush brush;
     brush.setStyle(Qt::SolidPattern);
-    // 绘制落子标记
-    if (clickPosRow != -1 && clickPosCol != -1 && game->gameMapVec[clickPosRow][clickPosCol] == 0)
+    // 绘制落子标记(防止鼠标出框越界)
+    if (clickPosRow > 0 && clickPosRow < kBoardSizeNum &&
+        clickPosCol > 0 && clickPosCol < kBoardSizeNum &&
+        game->gameMapVec[clickPosRow][clickPosCol] == 0)
     {
         if (game->playerFlag)
             brush.setColor(Qt::white);
@@ -90,8 +92,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
         }
 
     // 判断输赢
-    if (clickPosRow != -1 &&
-        clickPosCol != -1 &&
+    if (clickPosRow > 0 && clickPosRow < kBoardSizeNum &&
+        clickPosCol > 0 && clickPosCol < kBoardSizeNum &&
         (game->gameMapVec[clickPosRow][clickPosCol] == 1 ||
             game->gameMapVec[clickPosRow][clickPosCol] == -1))
     {
@@ -103,6 +105,9 @@ void MainWindow::paintEvent(QPaintEvent *event)
             else if (game->gameMapVec[clickPosRow][clickPosCol] == -1)
                 str = "black player";
             QMessageBox::information(this, "congratulations", str + "win!");
+
+            // 重置游戏状态，否则容易死循环
+            game->startGame(PERSON);
         }
     }
 
@@ -111,11 +116,12 @@ void MainWindow::paintEvent(QPaintEvent *event)
     if (game->isDeadGame())
     {
         QMessageBox::information(this, "oops", "dead game!");
+        game->startGame(PERSON);
     }
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
-{
+{   
     // 通过鼠标的hover确定落子的标记
     int x = event->x();
     int y = event->y();
