@@ -90,15 +90,22 @@ void MainWindow::paintEvent(QPaintEvent *event)
         }
 
     // 判断输赢
-    if (game->isWin(clickPosRow, clickPosCol))
+    if (clickPosRow != -1 &&
+        clickPosCol != -1 &&
+        (game->gameMapVec[clickPosRow][clickPosCol] == 1 ||
+            game->gameMapVec[clickPosRow][clickPosCol] == -1))
     {
-        QString str;
-        if (game->playerFlag)
-            str = "white player";
-        else
-            str = "black player";
-        QMessageBox::information(this, "congratulations", str + "win!");
+        if (game->isWin(clickPosRow, clickPosCol))
+        {
+            QString str;
+            if (game->gameMapVec[clickPosRow][clickPosCol] == 1)
+                str = "white player";
+            else if (game->gameMapVec[clickPosRow][clickPosCol] == -1)
+                str = "black player";
+            QMessageBox::information(this, "congratulations", str + "win!");
+        }
     }
+
 
     // 判断死局
     if (game->isDeadGame())

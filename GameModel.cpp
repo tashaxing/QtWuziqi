@@ -18,6 +18,9 @@ void GameModel::startGame(GameType gameType)
 
     // 己方下为true,对方下位false
     playerFlag = true;
+
+    // 初始时是playing
+    gameStatus = PLAYING;
 }
 
 void GameModel::updateGameMap(int row, int col)
@@ -44,23 +47,30 @@ bool GameModel::isWin(int row, int col)
                 break;
             }
         if (equalFlag)
+        {
+            gameStatus = WIN;
             return true;
+        }
+
     }
     // 竖直方向(往上校验)
     if (row - 4 > 0)
     {
         bool equalFlag = true;
-        for (int j = 4; i > 0; i--)
+        for (int i = 4; i > 0; i--)
             if (gameMapVec[row - i][col] != gameMapVec[row][col])
             {
                 equalFlag = false;
                 break;
             }
         if (equalFlag)
+        {
+            gameStatus = WIN;
             return true;
+        }
     }
     // 左斜方向
-    if (row + 4 < )
+//    if (row + 4 < )
     // 右斜方向
 
     return false;
@@ -68,6 +78,7 @@ bool GameModel::isWin(int row, int col)
 
 bool GameModel::isDeadGame()
 {
-
+    gameStatus = DEAD;
+    return false;
 }
 

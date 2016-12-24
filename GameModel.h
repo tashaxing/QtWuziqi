@@ -11,6 +11,14 @@ enum GameType
     BOT
 };
 
+// 游戏状态
+enum GameStatus
+{
+    PLAYING,
+    WIN,
+    DEAD
+};
+
 // 棋盘尺寸
 const int kBoardSizeNum = 15;
 
@@ -22,6 +30,7 @@ public:
 public:
     std::vector<std::vector<int>> gameMapVec; // 存储当前游戏棋盘和棋子的情况,空白为0，白子1，黑子-1
     bool playerFlag; // 标示下棋方
+    GameStatus gameStatus; // 游戏状态
 
     void startGame(GameType gameType); // 开始游戏
     void updateGameMap(int row, int col); // 每次落子后更新游戏棋盘
