@@ -145,7 +145,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 str = "white player";
             else if (game->gameMapVec[clickPosRow][clickPosCol] == -1)
                 str = "black player";
-            QMessageBox::StandardButton btnValue = QMessageBox::information(this, "congratulations", str + "win!");
+            QMessageBox::StandardButton btnValue = QMessageBox::information(this, "congratulations", str + " win!");
 
             // 重置游戏状态，否则容易死循环
             if (btnValue == QMessageBox::Ok)
