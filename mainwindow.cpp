@@ -3,6 +3,10 @@
 #include <QSound>
 #include <QMouseEvent>
 #include <QMessageBox>
+#include <QMenuBar>
+#include <QMenu>
+#include <QAction>
+#include <QDebug>
 #include <math.h>
 #include "mainwindow.h"
 
@@ -11,13 +15,13 @@
 #define WIN_SOUND ":/res/sound/win.wav"
 #define LOSE_SOUND ":/res/sound/lose.wav"
 
-const int kBoardMargin = 20; // 棋盘边缘空隙
+const int kBoardMargin = 30; // 棋盘边缘空隙
 const int kRadius = 15; // 棋子半径
 const int kMarkSize = 6; // 落子标记边长
 const int kBlockSize = 40; // 格子的大小
 const int kPosDelta = 20; // 鼠标点击的模糊距离上限
 
-const int kAIDelay = 1000; // AI下棋的思考时间
+const int kAIDelay = 700; // AI下棋的思考时间
 
 // -------------------- //
 
@@ -31,6 +35,16 @@ MainWindow::MainWindow(QWidget *parent)
     // 开启鼠标hover功能，这两句一般要设置window的
     setMouseTracking(true);
 //    centralWidget()->setMouseTracking(true);
+
+    // 添加菜单
+    QMenu *gameMenu = menuBar()->addMenu(tr("Game")); // menuBar默认是存在的，直接加菜单就可以了
+    QAction *actionPVP = new QAction("Person VS Person", this);
+    connect(actionPVP, SIGNAL(triggered()), this, SLOT(initPVPGame()));
+    gameMenu->addAction(actionPVP);
+
+    QAction *actionPVE = new QAction("Person VS Computer", this);
+    connect(actionPVE, SIGNAL(triggered()), this, SLOT(initPVEGame()));
+    gameMenu->addAction(actionPVE);
 
     // 开始游戏
     initGame();
@@ -49,8 +63,23 @@ void MainWindow::initGame()
 {   
     // 初始化游戏模型
     game = new GameModel;
-    game_type = BOT;
+    initPVPGame();
+}
+
+void MainWindow::initPVPGame()
+{
+    game_type = PERSON;
+    game->gameStatus = PLAYING;
     game->startGame(game_type);
+    update();
+}
+
+void MainWindow::initPVEGame()
+{
+    game_type = BOT;
+    game->gameStatus = PLAYING;
+    game->startGame(game_type);
+    update();
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -106,18 +135,24 @@ void MainWindow::paintEvent(QPaintEvent *event)
         (game->gameMapVec[clickPosRow][clickPosCol] == 1 ||
             game->gameMapVec[clickPosRow][clickPosCol] == -1))
     {
-        if (game->isWin(clickPosRow, clickPosCol))
+        if (game->isWin(clickPosRow, clickPosCol) && game->gameStatus == PLAYING)
         {
+            qDebug() << "win";
+            game->gameStatus = WIN;
             QSound::play(WIN_SOUND);
             QString str;
             if (game->gameMapVec[clickPosRow][clickPosCol] == 1)
                 str = "white player";
             else if (game->gameMapVec[clickPosRow][clickPosCol] == -1)
                 str = "black player";
-            QMessageBox::information(this, "congratulations", str + "win!");
+            QMessageBox::StandardButton btnValue = QMessageBox::information(this, "congratulations", str + "win!");
 
             // 重置游戏状态，否则容易死循环
-            game->startGame(game_type);
+            if (btnValue == QMessageBox::Ok)
+            {
+                game->startGame(game_type);
+                game->gameStatus = PLAYING;
+            }
         }
     }
 
@@ -126,8 +161,13 @@ void MainWindow::paintEvent(QPaintEvent *event)
     if (game->isDeadGame())
     {
         QSound::play(LOSE_SOUND);
-        QMessageBox::information(this, "oops", "dead game!");
-        game->startGame(game_type);
+        QMessageBox::StandardButton btnValue = QMessageBox::information(this, "oops", "dead game!");
+        if (btnValue == QMessageBox::Ok)
+        {
+            game->startGame(game_type);
+            game->gameStatus = PLAYING;
+        }
+
     }
 }
 
@@ -218,7 +258,8 @@ void MainWindow::chessOneByPerson()
 
 void MainWindow::chessOneByAI()
 {
-    game->actionByAI();
+    game->actionByAI(clickPosRow, clickPosCol);
     QSound::play(CHESS_ONE_SOUND);
+    update();
 }
 

@@ -28,8 +28,11 @@ private:
     void checkGame(int y, int x);
 
 private slots:
-    void chessOneByPerson(); // 下棋执行
-    void chessOneByAI();
+    void chessOneByPerson(); // 人执行
+    void chessOneByAI(); // AI下棋
+
+    void initPVPGame();
+    void initPVEGame();
 };
 
 #endif // MAINWINDOW_H
