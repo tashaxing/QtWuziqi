@@ -124,7 +124,14 @@ bool GameModel::isWin(int row, int col)
 
 bool GameModel::isDeadGame()
 {
+    // 所有空格全部填满
+    for (int i = 1; i < kBoardSizeNum; i++)
+        for (int j = 1; j < kBoardSizeNum; j++)
+        {
+            if (!(gameMapVec[i][j] == 1 || gameMapVec[i][j] == -1))
+                return false;
+        }
     gameStatus = DEAD;
-    return false;
+    return true;
 }
 

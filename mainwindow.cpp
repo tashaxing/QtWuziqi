@@ -1,11 +1,16 @@
 #include <QPainter>
 #include <QTimer>
+#include <QSound>
 #include <QMouseEvent>
 #include <QMessageBox>
 #include <math.h>
 #include "mainwindow.h"
 
 // -------全局遍历-------//
+#define CHESS_ONE_SOUND ":/res/sound/chessone.wav"
+#define WIN_SOUND ":/res/sound/win.wav"
+#define LOSE_SOUND ":/res/sound/lose.wav"
+
 const int kBoardMargin = 20; // 棋盘边缘空隙
 const int kRadius = 15; // 棋子半径
 const int kMarkSize = 6; // 落子标记边长
@@ -103,6 +108,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
     {
         if (game->isWin(clickPosRow, clickPosCol))
         {
+            QSound::play(WIN_SOUND);
             QString str;
             if (game->gameMapVec[clickPosRow][clickPosCol] == 1)
                 str = "white player";
@@ -119,6 +125,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
     // 判断死局
     if (game->isDeadGame())
     {
+        QSound::play(LOSE_SOUND);
         QMessageBox::information(this, "oops", "dead game!");
         game->startGame(game_type);
     }
@@ -202,6 +209,7 @@ void MainWindow::chessOneByPerson()
     if (clickPosRow != -1 && clickPosCol != -1 && game->gameMapVec[clickPosRow][clickPosCol] == 0)
     {
         game->actionByPerson(clickPosRow, clickPosCol);
+        QSound::play(CHESS_ONE_SOUND);
 
         // 重绘
         update();
@@ -211,5 +219,6 @@ void MainWindow::chessOneByPerson()
 void MainWindow::chessOneByAI()
 {
     game->actionByAI();
+    QSound::play(CHESS_ONE_SOUND);
 }
 
