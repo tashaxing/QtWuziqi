@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTcpSocket>
+#include <QHostAddress>
 #include "GameModel.h"
 
 class MainWindow : public QMainWindow
@@ -27,12 +29,22 @@ private:
     void initGame();
     void checkGame(int y, int x);
 
+    int port;
+    QHostAddress *serverIP;
+    QTcpSocket *tcpSocket;
+
 private slots:
     void chessOneByPerson(); // 人执行
     void chessOneByAI(); // AI下棋
 
+    void chessOneByPersonOnline(); // 通过网络与好友下棋
+
     void initPVPGame();
     void initPVEGame();
+
+    void initPVPOLGame();
+
+    void dataReceived();
 };
 
 #endif // MAINWINDOW_H
