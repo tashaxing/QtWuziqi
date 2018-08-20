@@ -46,6 +46,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(actionPVE, SIGNAL(triggered()), this, SLOT(initPVEGame()));
     gameMenu->addAction(actionPVE);
 
+    QAction *actionPVPOL = new QAction("Person VS Person Online", this);
+    connect(actionPVPOL, SIGNAL(triggered()), this, SLOT(initPVPOLGame()));
+    gameMenu->addAction(actionPVPOL);
+
     // 开始游戏
     initGame();
 }
@@ -79,6 +83,28 @@ void MainWindow::initPVEGame()
     game_type = BOT;
     game->gameStatus = PLAYING;
     game->startGame(game_type);
+    update();
+}
+
+void MainWindow::initPVPOLGame()
+{
+    // 初始化套接字
+    tcpSocket = new QTcpSocket(this);
+
+    //连接服务器
+    port = 12345;
+    serverIP = new QHostAddress();
+    QString ip = "127.0.0.1";
+    serverIP->setAddress(ip);
+    tcpSocket->connectToHost(*serverIP, port);
+
+    connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(dataReceived()));
+    game_type = PERSON_ONLINE;
+    game->gameStatus = PLAYING;
+    game->startGame(game_type);
+
+    setMouseTracking(false);
+
     update();
 }
 
@@ -228,6 +254,10 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
+    if(game_type == PERSON_ONLINE && !game->playerFlag)
+    {
+        chessOneByPersonOnline();
+    }
     // 人下棋，并且不能抢机器的棋
     if (!(game_type == BOT && !game->playerFlag))
     {
@@ -263,3 +293,57 @@ void MainWindow::chessOneByAI()
     update();
 }
 
+void MainWindow::chessOneByPersonOnline()
+{
+    // 根据当前存储的坐标下子
+    // 只有有效点击才下子，并且该处没有子
+    if (clickPosRow != -1 && clickPosCol != -1 && game->gameMapVec[clickPosRow][clickPosCol] == 0)
+    {
+        game->actionByPerson(clickPosRow, clickPosCol);
+        QSound::play(CHESS_ONE_SOUND);
+
+        // 将位置通过套接字发给对手
+        QString scol = QString::number(clickPosCol, 10);
+        QString srow = QString::number(clickPosRow, 10);
+        QString msg = srow + "," + scol + "\n"; // 注意:要加上换行符
+        //qDebug() << msg;
+        int length = tcpSocket->write(msg.toLatin1(), msg.length());
+        tcpSocket->flush();
+        if(length != msg.length())
+        {
+            return;
+        }
+        // 重绘
+        update();
+    }
+}
+
+void MainWindow::dataReceived()
+{
+    QByteArray datagram;
+    datagram.resize(tcpSocket->bytesAvailable());
+    tcpSocket->read(datagram.data(), datagram.size());
+    QString msg = datagram.data();
+    // 只有第一个开始游戏的玩家才会收到这条消息
+    if(msg.contains("has"))
+    {
+        setMouseTracking(true);
+        game->playerFlag = false;
+        //qDebug() << "You are the first one";
+        return;
+    }
+
+
+    int row = msg.section(',', 0, 0).toInt();
+    int col = msg.section(',', 1, 1).toInt();
+    //qDebug() << "recv:" << row << col;
+    setMouseTracking(false);
+
+    if (row != -1 && col != -1 && game->gameMapVec[row][col] == 0)
+    {
+        game->actionByPerson(row, col);
+        QSound::play(CHESS_ONE_SOUND);
+        setMouseTracking(true);
+    }
+    update();
+}

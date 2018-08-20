@@ -8,7 +8,8 @@
 enum GameType
 {
     PERSON,
-    BOT
+    BOT,
+    PERSON_ONLINE
 };
 
 // 游戏状态
