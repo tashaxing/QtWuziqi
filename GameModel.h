@@ -20,7 +20,7 @@ enum GameStatus
 };
 
 // 棋盘尺寸
-const int kBoardSizeNum = 15;
+const int kBoardSizeNum = 9;
 
 class GameModel
 {
