@@ -276,7 +276,7 @@ void MainWindow::chessOneByPerson()
     // 只有有效点击才下子，并且该处没有子
     if (clickPosRow != -1 && clickPosCol != -1 && game->gameMapVec[clickPosRow][clickPosCol] == 0)
     {
-        if(clickPosRow<9&&clickPosCol<9)
+        if(clickPosRow<kBoardSizeNum&&clickPosCol<kBoardSizeNum)
         {
             game->actionByPerson(clickPosRow, clickPosCol);
             QSound::play(CHESS_ONE_SOUND);
