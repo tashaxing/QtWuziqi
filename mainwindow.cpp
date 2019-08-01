@@ -29,15 +29,17 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     // 设置棋盘大小
-    setFixedSize(kBoardMargin * 2 + kBlockSize * kBoardSizeNum, kBoardMargin * 2 + kBlockSize * kBoardSizeNum);
+    setFixedSize(kBoardMargin * 2 + kBlockSize * kBoardSizeNum,
+                 kBoardMargin * 2 + kBlockSize * kBoardSizeNum);
 //    setStyleSheet("background-color:yellow;");
-
     // 开启鼠标hover功能，这两句一般要设置window的
     setMouseTracking(true);
 //    centralWidget()->setMouseTracking(true);
 
     // 添加菜单
+
     QMenu *gameMenu = menuBar()->addMenu(tr("Game")); // menuBar默认是存在的，直接加菜单就可以了
+    \
     QAction *actionPVP = new QAction("Person VS Person", this);
     connect(actionPVP, SIGNAL(triggered()), this, SLOT(initPVPGame()));
     gameMenu->addAction(actionPVP);
@@ -45,6 +47,12 @@ MainWindow::MainWindow(QWidget *parent)
     QAction *actionPVE = new QAction("Person VS Computer", this);
     connect(actionPVE, SIGNAL(triggered()), this, SLOT(initPVEGame()));
     gameMenu->addAction(actionPVE);
+    //添加网络对战
+    QAction *actionPVPNET = new QAction("Person VS Computer(network)", this);
+    connect(actionPVPNET, SIGNAL(triggered()), this, SLOT(initPVPNETGame()));
+    gameMenu->addAction(actionPVPNET);
+
+
 
     // 开始游戏
     initGame();
@@ -82,6 +90,16 @@ void MainWindow::initPVEGame()
     update();
 }
 
+void MainWindow::initPVPNETGame()
+{
+    //this->hide();
+
+   // Client w;
+    //w.show();
+
+    //this->show();
+}
+
 void MainWindow::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
@@ -90,8 +108,9 @@ void MainWindow::paintEvent(QPaintEvent *event)
 //    QPen pen; // 调整线条宽度
 //    pen.setWidth(2);
 //    painter.setPen(pen);
-    for (int i = 0; i < kBoardSizeNum + 1; i++)
+    for (int i = 0; i < kBoardSizeNum+1; i++)
     {
+        //绘制列
         painter.drawLine(kBoardMargin + kBlockSize * i, kBoardMargin, kBoardMargin + kBlockSize * i, size().height() - kBoardMargin);
         painter.drawLine(kBoardMargin, kBoardMargin + kBlockSize * i, size().width() - kBoardMargin, kBoardMargin + kBlockSize * i);
     }
@@ -99,8 +118,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
     QBrush brush;
     brush.setStyle(Qt::SolidPattern);
     // 绘制落子标记(防止鼠标出框越界)
-    if (clickPosRow > 0 && clickPosRow < kBoardSizeNum &&
-        clickPosCol > 0 && clickPosCol < kBoardSizeNum &&
+    if (clickPosRow >= 0 && clickPosRow < kBoardSizeNum &&
+        clickPosCol >=0 && clickPosCol < kBoardSizeNum &&
         game->gameMapVec[clickPosRow][clickPosCol] == 0)
     {
         if (game->playerFlag)
@@ -176,13 +195,19 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     // 通过鼠标的hover确定落子的标记
     int x = event->x();
     int y = event->y();
+   // 初始化最终的值
+    clickPosRow = -1;
+    clickPosCol = -1;
+
 
     // 棋盘边缘不能落子
     if (x >= kBoardMargin + kBlockSize / 2 &&
             x < size().width() - kBoardMargin &&
-            y >= kBoardMargin + kBlockSize / 2 &&
+            y > kBoardMargin + kBlockSize / 2 &&
             y < size().height()- kBoardMargin)
     {
+
+
         // 获取最近的左上角的点
         int col = x / kBlockSize;
         int row = y / kBlockSize;
@@ -191,8 +216,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
         int leftTopPosY = kBoardMargin + kBlockSize * row;
 
         // 根据距离算出合适的点击位置,一共四个点，根据半径距离选最近的
-        clickPosRow = -1; // 初始化最终的值
-        clickPosCol = -1;
+//        clickPosRow = -1;// 初始化最终的值
+//        clickPosCol = -1;
         int len = 0; // 计算完后取整就可以了
 
         // 确定一个误差在范围内的点，且只可能确定一个出来
@@ -220,6 +245,9 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
             clickPosRow = row + 1;
             clickPosCol = col + 1;
         }
+        //调试信息
+        qDebug()<<"x=: "<<x<<" "<<"y=: "<<y<<" --"<<endl<<"clickPosRow: "<<clickPosRow
+               <<" "<< "clickPosCol: "<<clickPosCol<<endl;
     }
 
     // 存了坐标后也要重绘
@@ -248,11 +276,15 @@ void MainWindow::chessOneByPerson()
     // 只有有效点击才下子，并且该处没有子
     if (clickPosRow != -1 && clickPosCol != -1 && game->gameMapVec[clickPosRow][clickPosCol] == 0)
     {
-        game->actionByPerson(clickPosRow, clickPosCol);
-        QSound::play(CHESS_ONE_SOUND);
+        if(clickPosRow<kBoardSizeNum&&clickPosCol<kBoardSizeNum)
+        {
+            game->actionByPerson(clickPosRow, clickPosCol);
+            QSound::play(CHESS_ONE_SOUND);
 
-        // 重绘
-        update();
+            // 重绘
+            update();
+        }
+
     }
 }
 

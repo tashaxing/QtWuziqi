@@ -13,10 +13,10 @@ void GameModel::startGame(GameType type)
     gameType = type;
     // 初始棋盘
     gameMapVec.clear();
-    for (int i = 0; i < kBoardSizeNum; i++)
+    for (int i = 0; i < kBoardSizeNum+1; i++)
     {
         std::vector<int> lineBoard;
-        for (int j = 0; j < kBoardSizeNum; j++)
+        for (int j = 0; j < kBoardSizeNum+1; j++)
             lineBoard.push_back(0);
         gameMapVec.push_back(lineBoard);
     }
@@ -49,6 +49,8 @@ void GameModel::updateGameMap(int row, int col)
 
     // 换手
     playerFlag = !playerFlag;
+
+
 }
 
 void GameModel::actionByPerson(int row, int col)
