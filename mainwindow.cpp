@@ -246,7 +246,7 @@ void MainWindow::chessOneByPerson()
 {
     // 根据当前存储的坐标下子
     // 只有有效点击才下子，并且该处没有子
-    if (clickPosRow != -1 && clickPosCol != -1 && game->gameMapVec[clickPosRow][clickPosCol] == 0)
+    if (clickPosRow != -1 && clickPosCol != -1 &&clickPosRow < kBoardSizeNum && clickPosCol < kBoardSizeNum && game->gameMapVec[clickPosRow][clickPosCol] == 0)
     {
         game->actionByPerson(clickPosRow, clickPosCol);
         QSound::play(CHESS_ONE_SOUND);
